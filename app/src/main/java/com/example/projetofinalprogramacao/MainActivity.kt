@@ -15,6 +15,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -38,7 +42,23 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun EcraPrincipal() {
-    MenuPrincipalFilmesSeries {  }
+    var ecraAtual by remember { mutableStateOf("menu") }
+    var tipoSelecionado by remember { mutableStateOf("") }
+
+    when (ecraAtual) {
+        "menu" -> MenuPrincipalFilmesSeries(
+            onCategoriaSelecionada = { tipo ->
+                tipoSelecionado = tipo
+                ecraAtual = "generos"
+            }
+        )
+        "generos" -> {
+            EcraGenerosTemporario(
+                tipo = tipoSelecionado,
+                onVoltar = { ecraAtual = "menu" }
+            )
+        }
+    }
 }
 
 @Composable
@@ -72,6 +92,27 @@ fun MenuPrincipalFilmesSeries(onCategoriaSelecionada: (String) -> Unit) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Séries", style = MaterialTheme.typography.bodyLarge)
+        }
+    }
+}
+
+@Composable
+fun EcraGenerosTemporario(tipo: String, onVoltar: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Entraste na secção de: $tipo",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+
+        Button(onClick = onVoltar) {
+            Text(text = "Voltar Atrás")
         }
     }
 }
