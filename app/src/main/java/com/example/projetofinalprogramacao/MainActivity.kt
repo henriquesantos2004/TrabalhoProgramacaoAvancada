@@ -53,7 +53,7 @@ fun EcraPrincipal() {
             }
         )
         "generos" -> {
-            EcraGenerosTemporario(
+            EcraGeneros(
                 tipo = tipoSelecionado,
                 onVoltar = { ecraAtual = "menu" }
             )
@@ -97,22 +97,47 @@ fun MenuPrincipalFilmesSeries(onCategoriaSelecionada: (String) -> Unit) {
 }
 
 @Composable
-fun EcraGenerosTemporario(tipo: String, onVoltar: () -> Unit) {
+fun EcraGeneros(tipo: String, onVoltar: () -> Unit) {
+    val listaGeneros = if (tipo == "Filmes") {
+        FonteDeDados.generosFilmes
+    } else {
+        FonteDeDados.generosSeries
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
+        // Título do Ecrã
         Text(
-            text = "Entraste na secção de: $tipo",
+            text = "Géneros de $tipo",
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(top = 32.dp, bottom = 32.dp)
         )
 
-        Button(onClick = onVoltar) {
-            Text(text = "Voltar Atrás")
+        listaGeneros.forEach { genero ->
+            Button(
+                onClick = {
+
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                Text(text = genero.nomeGenero, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+
+        androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = onVoltar,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Voltar ao Menu")
         }
     }
 }
