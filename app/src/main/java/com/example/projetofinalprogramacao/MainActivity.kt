@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -22,6 +24,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -251,53 +255,123 @@ fun EcraDetalheFilme(item: ItemMedia?, onVerComentarios: () -> Unit, onVoltar: (
         }
     }
 }
-
 @Composable
 fun EcraComentarios(item: ItemMedia?, onVoltar: () -> Unit) {
     if (item == null) return
 
-    val listaComentarios = remember {
-        listOf(
-            "Filme brutal! Adorei a banda sonora.",
-            "Achei um bocado lento no início, mas o final compensa.",
-            "Um clássico, já vi mais de 5 vezes!"
-        )
-    }
+    // Estados para controlar o pop-up de escrita
+    var mostrarDialogo by remember { mutableStateOf(false) }
+    var textoNovoComentario by remember { mutableStateOf("") }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // Título simples focado no filme selecionado
-        Text(
-            text = "Opiniões: ${item.titulo}",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.fillMaxWidth().padding(top = 32.dp, bottom = 24.dp)
-        )
+        // Barra Superior: Título à esquerda, Botão "+" à direita
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 32.dp, bottom = 24.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Opiniões: ${item.titulo}",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.weight(1f) // Dá espaço para o botão não fugir
+            )
 
-        // Lista de comentários apenas para leitura
-        Column(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            listaComentarios.forEach { comentario ->
+            // Botão do "+" usando um Button pequeno (ou podes usar IconButton se preferires)
+            Button(
+                onClick = { mostrarDialogo = true },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(text = "+", style = MaterialTheme.typography.titleLarge)
+            }
+        }
+
+        // Lista dinâmica de comentários (Lê diretamente do teu objeto ItemMedia)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            items(item.comentarios) { comentario ->
                 Card(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Text(
-                        text = comentario,
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Nome de quem comentou (podes deixar fixo "Utilizador" para já)
+                        Text(
+                            text = comentario.autor,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = comentario.texto,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             }
         }
 
         Button(
             onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         ) {
             Text(text = "Voltar ao Filme")
         }
+    }
+
+    // CAIXA DE DIÁLOGO (Pop-up) para escrever o novo comentário
+    if (mostrarDialogo) {
+        AlertDialog(
+            onDismissRequest = { mostrarDialogo = false },
+            title = { Text(text = "Adicionar Comentário") },
+            text = {
+                Column {
+                    Text(text = "O que achaste do conteúdo?", modifier = Modifier.padding(bottom = 8.dp))
+                    TextField(
+                        value = textoNovoComentario,
+                        onValueChange = { textoNovoComentario = it },
+                        placeholder = { Text("Escreve aqui...") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (textoNovoComentario.isNotBlank()) {
+                            // Adiciona o comentário diretamente à lista mutável do filme!
+                            item.comentarios.add(
+                                Comentario(autor = "Utilizador", texto = textoNovoComentario)
+                            )
+                            // Limpa o texto e fecha o pop-up
+                            textoNovoComentario = ""
+                            mostrarDialogo = false
+                        }
+                    }
+                ) {
+                    Text("Submeter")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { mostrarDialogo = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
