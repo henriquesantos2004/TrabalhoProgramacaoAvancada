@@ -4,13 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -21,9 +26,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.projetofinalprogramacao.ui.theme.ProjetoFinalProgramacaoTheme
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +49,7 @@ class MainActivity : ComponentActivity() {
 fun EcraPrincipal() {
     var ecraAtual by remember { mutableStateOf("menu") }
     var tipoSelecionado by remember { mutableStateOf("") }
+    var generoSelecionado by remember { mutableStateOf<CategoriaGenero?>(null) }
 
     when (ecraAtual) {
         "menu" -> MenuPrincipalFilmesSeries(
@@ -55,7 +61,17 @@ fun EcraPrincipal() {
         "generos" -> {
             EcraGeneros(
                 tipo = tipoSelecionado,
+                onGeneroSelecionado = { genero ->
+                    generoSelecionado = genero
+                    ecraAtual = "lista"
+                },
                 onVoltar = { ecraAtual = "menu" }
+            )
+        }
+        "lista" -> {
+            EcraListaItens(
+                genero = generoSelecionado,
+                onVoltar = { ecraAtual = "generos" }
             )
         }
     }
@@ -76,7 +92,6 @@ fun MenuPrincipalFilmesSeries(onCategoriaSelecionada: (String) -> Unit) {
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // Botão para Filmes
         Button(
             onClick = { onCategoriaSelecionada("Filmes") },
             modifier = Modifier
@@ -86,7 +101,6 @@ fun MenuPrincipalFilmesSeries(onCategoriaSelecionada: (String) -> Unit) {
             Text(text = "Filmes", style = MaterialTheme.typography.bodyLarge)
         }
 
-        // Botão para Séries
         Button(
             onClick = { onCategoriaSelecionada("Séries") },
             modifier = Modifier.fillMaxWidth()
@@ -97,7 +111,7 @@ fun MenuPrincipalFilmesSeries(onCategoriaSelecionada: (String) -> Unit) {
 }
 
 @Composable
-fun EcraGeneros(tipo: String, onVoltar: () -> Unit) {
+fun EcraGeneros(tipo: String, onGeneroSelecionado: (CategoriaGenero) -> Unit, onVoltar: () -> Unit) {
     val listaGeneros = if (tipo == "Filmes") {
         FonteDeDados.generosFilmes
     } else {
@@ -111,7 +125,6 @@ fun EcraGeneros(tipo: String, onVoltar: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        // Título do Ecrã
         Text(
             text = "Géneros de $tipo",
             style = MaterialTheme.typography.headlineMedium,
@@ -120,9 +133,7 @@ fun EcraGeneros(tipo: String, onVoltar: () -> Unit) {
 
         listaGeneros.forEach { genero ->
             Button(
-                onClick = {
-
-                },
+                onClick = { onGeneroSelecionado(genero) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
@@ -131,13 +142,62 @@ fun EcraGeneros(tipo: String, onVoltar: () -> Unit) {
             }
         }
 
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = onVoltar,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Voltar ao Menu")
+        }
+    }
+}
+
+@Composable
+fun EcraListaItens(genero: CategoriaGenero?, onVoltar: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        Text(
+            text = genero?.nomeGenero ?: "Lista",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(top = 32.dp, bottom = 16.dp)
+        )
+
+        genero?.itens?.forEach { item ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                onClick = {  }
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = item.imagemRes),
+                        contentDescription = "Capa de ${item.titulo}",
+                        modifier = Modifier
+                            .size(50.dp)
+                            .padding(end = 16.dp)
+                    )
+                    Text(text = item.titulo, style = MaterialTheme.typography.titleLarge)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Button(
+            onClick = onVoltar,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Voltar aos Géneros")
         }
     }
 }
