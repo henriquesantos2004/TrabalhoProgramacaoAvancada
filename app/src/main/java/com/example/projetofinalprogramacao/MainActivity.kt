@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -86,7 +87,14 @@ fun EcraPrincipal() {
         "detalhes" -> {
             EcraDetalheFilme(
                 item = itemSelecionado,
+                onVerComentarios = { ecraAtual = "comentarios" },
                 onVoltar = { ecraAtual = "lista" }
+            )
+        }
+        "comentarios" -> {
+            EcraComentarios(
+                item = itemSelecionado,
+                onVoltar = { ecraAtual = "detalhes" }
             )
         }
     }
@@ -95,9 +103,7 @@ fun EcraPrincipal() {
 @Composable
 fun MenuPrincipalFilmesSeries(onCategoriaSelecionada: (String) -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -109,9 +115,7 @@ fun MenuPrincipalFilmesSeries(onCategoriaSelecionada: (String) -> Unit) {
 
         Button(
             onClick = { onCategoriaSelecionada("Filmes") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
         ) {
             Text(text = "Filmes", style = MaterialTheme.typography.bodyLarge)
         }
@@ -127,16 +131,10 @@ fun MenuPrincipalFilmesSeries(onCategoriaSelecionada: (String) -> Unit) {
 
 @Composable
 fun EcraGeneros(tipo: String, onGeneroSelecionado: (CategoriaGenero) -> Unit, onVoltar: () -> Unit) {
-    val listaGeneros = if (tipo == "Filmes") {
-        FonteDeDados.generosFilmes
-    } else {
-        FonteDeDados.generosSeries
-    }
+    val listaGeneros = if (tipo == "Filmes") FonteDeDados.generosFilmes else FonteDeDados.generosSeries
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -149,9 +147,7 @@ fun EcraGeneros(tipo: String, onGeneroSelecionado: (CategoriaGenero) -> Unit, on
         listaGeneros.forEach { genero ->
             Button(
                 onClick = { onGeneroSelecionado(genero) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
             ) {
                 Text(text = genero.nomeGenero, style = MaterialTheme.typography.bodyLarge)
             }
@@ -159,10 +155,7 @@ fun EcraGeneros(tipo: String, onGeneroSelecionado: (CategoriaGenero) -> Unit, on
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Button(onClick = onVoltar, modifier = Modifier.fillMaxWidth()) {
             Text(text = "Voltar ao Menu")
         }
     }
@@ -171,9 +164,7 @@ fun EcraGeneros(tipo: String, onGeneroSelecionado: (CategoriaGenero) -> Unit, on
 @Composable
 fun EcraListaItens(genero: CategoriaGenero?, onItemSelecionado: (ItemMedia) -> Unit, onVoltar: () -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -185,9 +176,7 @@ fun EcraListaItens(genero: CategoriaGenero?, onItemSelecionado: (ItemMedia) -> U
 
         genero?.itens?.forEach { item ->
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                 onClick = { onItemSelecionado(item) }
             ) {
                 Row(
@@ -197,9 +186,7 @@ fun EcraListaItens(genero: CategoriaGenero?, onItemSelecionado: (ItemMedia) -> U
                     Image(
                         painter = painterResource(id = item.imagemRes),
                         contentDescription = null,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .padding(end = 16.dp)
+                        modifier = Modifier.size(50.dp).padding(end = 16.dp)
                     )
                     Text(text = item.titulo, style = MaterialTheme.typography.titleLarge)
                 }
@@ -208,80 +195,109 @@ fun EcraListaItens(genero: CategoriaGenero?, onItemSelecionado: (ItemMedia) -> U
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
-            onClick = onVoltar,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Button(onClick = onVoltar, modifier = Modifier.fillMaxWidth()) {
             Text(text = "Voltar aos Géneros")
         }
     }
 }
 
 @Composable
-fun EcraDetalheFilme(item: ItemMedia?, onVoltar: () -> Unit) {
+fun EcraDetalheFilme(item: ItemMedia?, onVerComentarios: () -> Unit, onVoltar: () -> Unit) {
     if (item == null) return
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween // Separa o topo, o meio e o botão de voltar
+        verticalArrangement = Arrangement.SpaceBetween
     ) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Card(
-            modifier = Modifier
-                .size(width = 300.dp, height = 400.dp)
-                .shadow(8.dp),
+            modifier = Modifier.size(width = 280.dp, height = 360.dp).shadow(8.dp),
             colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color.White),
             shape = MaterialTheme.shapes.medium
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp), // Este padding cria o efeito de "borda" da moldura da arte
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
                 Image(
                     painter = painterResource(id = item.imagemRes),
-                    contentDescription = "Poster do filme",
+                    contentDescription = null,
                     modifier = Modifier.fillMaxSize()
                 )
             }
         }
+
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
-                // Título do Filme
-                Text(
-                    text = item.titulo,
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                Text(
-                    text = item.sinopse,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = item.titulo, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 8.dp))
+                Text(text = item.sinopse, style = MaterialTheme.typography.bodyMedium)
             }
         }
+
         Button(
-            onClick = onVoltar,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
+            onClick = onVerComentarios,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
+            Text(text = "Ver Comentários")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = onVoltar, modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
             Text(text = "Voltar à Lista")
         }
     }
 }
 
+@Composable
+fun EcraComentarios(item: ItemMedia?, onVoltar: () -> Unit) {
+    if (item == null) return
+
+    val listaComentarios = remember {
+        listOf(
+            "Filme brutal! Adorei a banda sonora.",
+            "Achei um bocado lento no início, mas o final compensa.",
+            "Um clássico, já vi mais de 5 vezes!"
+        )
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        // Título simples focado no filme selecionado
+        Text(
+            text = "Opiniões: ${item.titulo}",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.fillMaxWidth().padding(top = 32.dp, bottom = 24.dp)
+        )
+
+        // Lista de comentários apenas para leitura
+        Column(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            listaComentarios.forEach { comentario ->
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Text(
+                        text = comentario,
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+        }
+
+        Button(
+            onClick = onVoltar,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+        ) {
+            Text(text = "Voltar ao Filme")
+        }
+    }
+}
 
