@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -26,9 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.projetofinalprogramacao.ui.theme.ProjetoFinalProgramacaoTheme
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +54,7 @@ fun EcraPrincipal() {
     var ecraAtual by remember { mutableStateOf("menu") }
     var tipoSelecionado by remember { mutableStateOf("") }
     var generoSelecionado by remember { mutableStateOf<CategoriaGenero?>(null) }
+    var itemSelecionado by remember { mutableStateOf<ItemMedia?>(null) }
 
     when (ecraAtual) {
         "menu" -> MenuPrincipalFilmesSeries(
@@ -71,7 +76,17 @@ fun EcraPrincipal() {
         "lista" -> {
             EcraListaItens(
                 genero = generoSelecionado,
+                onItemSelecionado = { item ->
+                    itemSelecionado = item
+                    ecraAtual = "detalhes"
+                },
                 onVoltar = { ecraAtual = "generos" }
+            )
+        }
+        "detalhes" -> {
+            EcraDetalheFilme(
+                item = itemSelecionado,
+                onVoltar = { ecraAtual = "lista" }
             )
         }
     }
@@ -154,7 +169,7 @@ fun EcraGeneros(tipo: String, onGeneroSelecionado: (CategoriaGenero) -> Unit, on
 }
 
 @Composable
-fun EcraListaItens(genero: CategoriaGenero?, onVoltar: () -> Unit) {
+fun EcraListaItens(genero: CategoriaGenero?, onItemSelecionado: (ItemMedia) -> Unit, onVoltar: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -173,7 +188,7 @@ fun EcraListaItens(genero: CategoriaGenero?, onVoltar: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                onClick = {  }
+                onClick = { onItemSelecionado(item) }
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -181,7 +196,7 @@ fun EcraListaItens(genero: CategoriaGenero?, onVoltar: () -> Unit) {
                 ) {
                     Image(
                         painter = painterResource(id = item.imagemRes),
-                        contentDescription = "Capa de ${item.titulo}",
+                        contentDescription = null,
                         modifier = Modifier
                             .size(50.dp)
                             .padding(end = 16.dp)
@@ -201,3 +216,72 @@ fun EcraListaItens(genero: CategoriaGenero?, onVoltar: () -> Unit) {
         }
     }
 }
+
+@Composable
+fun EcraDetalheFilme(item: ItemMedia?, onVoltar: () -> Unit) {
+    if (item == null) return
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween // Separa o topo, o meio e o botão de voltar
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Card(
+            modifier = Modifier
+                .size(width = 300.dp, height = 400.dp)
+                .shadow(8.dp),
+            colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color.White),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp), // Este padding cria o efeito de "borda" da moldura da arte
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = item.imagemRes),
+                    contentDescription = "Poster do filme",
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                // Título do Filme
+                Text(
+                    text = item.titulo,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Text(
+                    text = item.sinopse,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
+        Button(
+            onClick = onVoltar,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            Text(text = "Voltar à Lista")
+        }
+    }
+}
+
+
